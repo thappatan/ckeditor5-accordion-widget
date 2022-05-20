@@ -2,15 +2,11 @@
  * @license Copyright (c) 2014-2022, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
-import BalloonBlockEditor from '@ckeditor/ckeditor5-editor-balloon/src/ballooneditor.js';
+import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor.js';
 import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment.js';
 import Autoformat from '@ckeditor/ckeditor5-autoformat/src/autoformat.js';
-import AutoLink from '@ckeditor/ckeditor5-link/src/autolink.js';
-import Autosave from '@ckeditor/ckeditor5-autosave/src/autosave.js';
 import BlockQuote from '@ckeditor/ckeditor5-block-quote/src/blockquote.js';
-import BlockToolbar from '@ckeditor/ckeditor5-ui/src/toolbar/block/blocktoolbar.js';
 import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold.js';
-import CKFinder from '@ckeditor/ckeditor5-ckfinder/src/ckfinder.js';
 import CKFinderUploadAdapter from '@ckeditor/ckeditor5-adapter-ckfinder/src/uploadadapter.js';
 import CloudServices from '@ckeditor/ckeditor5-cloud-services/src/cloudservices.js';
 import Code from '@ckeditor/ckeditor5-basic-styles/src/code.js';
@@ -24,16 +20,15 @@ import Highlight from '@ckeditor/ckeditor5-highlight/src/highlight.js';
 import HorizontalLine from '@ckeditor/ckeditor5-horizontal-line/src/horizontalline.js';
 import Image from '@ckeditor/ckeditor5-image/src/image.js';
 import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption.js';
-import ImageInsert from '@ckeditor/ckeditor5-image/src/imageinsert.js';
 import ImageResize from '@ckeditor/ckeditor5-image/src/imageresize.js';
 import ImageStyle from '@ckeditor/ckeditor5-image/src/imagestyle.js';
 import ImageToolbar from '@ckeditor/ckeditor5-image/src/imagetoolbar.js';
-import ImageUpload from '@ckeditor/ckeditor5-image/src/imageupload.js';
+import ImageInsert from '@ckeditor/ckeditor5-image/src/imageinsert.js';
 import Indent from '@ckeditor/ckeditor5-indent/src/indent.js';
 import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic.js';
 import Link from '@ckeditor/ckeditor5-link/src/link.js';
-import LinkImage from '@ckeditor/ckeditor5-link/src/linkimage.js';
 import List from '@ckeditor/ckeditor5-list/src/list.js';
+import ListProperties from '@ckeditor/ckeditor5-list/src/listproperties.js';
 import MediaEmbed from '@ckeditor/ckeditor5-media-embed/src/mediaembed.js';
 import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
 import PasteFromOffice from '@ckeditor/ckeditor5-paste-from-office/src/pastefromoffice.js';
@@ -43,22 +38,26 @@ import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar.js';
 import TextTransformation from '@ckeditor/ckeditor5-typing/src/texttransformation.js';
 import Title from '@ckeditor/ckeditor5-heading/src/title.js';
 import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline.js';
+import WordCount from '@ckeditor/ckeditor5-word-count/src/wordcount.js';
+
+import { StrapiUploadAdapter } from "@gtomato/ckeditor5-strapi-upload-plugin";
 
 import Accordion from '../accordion/accordion';
+import FullScreen from "../fullscreen-plugin";
+import StrapiMediaLib from "../strapi-medialib-plugin";
 
-class Editor extends BalloonBlockEditor {}
+class Editor extends ClassicEditor {}
 
 // Plugins to include in the build.
 Editor.builtinPlugins = [
+	StrapiUploadAdapter,
+	StrapiMediaLib,
+	FullScreen,
 	Accordion,
 	Alignment,
 	Autoformat,
-	AutoLink,
-	Autosave,
 	BlockQuote,
-	BlockToolbar,
 	Bold,
-	CKFinder,
 	CKFinderUploadAdapter,
 	CloudServices,
 	Code,
@@ -72,16 +71,15 @@ Editor.builtinPlugins = [
 	HorizontalLine,
 	Image,
 	ImageCaption,
-	ImageInsert,
 	ImageResize,
 	ImageStyle,
 	ImageToolbar,
-	ImageUpload,
+	ImageInsert,
 	Indent,
 	Italic,
 	Link,
-	LinkImage,
 	List,
+	ListProperties,
 	MediaEmbed,
 	Paragraph,
 	PasteFromOffice,
@@ -90,7 +88,8 @@ Editor.builtinPlugins = [
 	TableToolbar,
 	TextTransformation,
 	Title,
-	Underline
+	Underline,
+	WordCount
 ];
 
 // Editor configuration.
@@ -98,33 +97,44 @@ Editor.defaultConfig = {
 	toolbar: {
 		items: [
 			'heading',
+			'|',
 			'bold',
 			'italic',
 			'link',
 			'underline',
-			'fontColor',
 			'fontSize',
+			'fontFamily',
+			'fontColor',
 			'fontBackgroundColor',
-			'alignment'
+			'alignment',
+			'bulletedList',
+			'numberedList',
+			'|',
+			'outdent',
+			'indent',
+			'|',
+			'accordion',
+			'insertImage',
+			'strapiMediaLib',
+			'blockQuote',
+			'insertTable',
+			'mediaEmbed',
+			'highlight',
+			'horizontalLine',
+			'code',
+			'undo',
+			'redo',
+			'|',
+			'fullScreen'
 		]
 	},
 	language: 'en',
-	blockToolbar: [
-		'accordion',
-		'imageUpload',
-		'blockQuote',
-		'mediaEmbed',
-		'numberedList',
-		'bulletedList',
-		'horizontalLine'
-	],
 	image: {
 		toolbar: [
 			'imageTextAlternative',
 			'imageStyle:inline',
 			'imageStyle:block',
-			'imageStyle:side',
-			'linkImage'
+			'imageStyle:side'
 		]
 	},
 	table: {
@@ -133,7 +143,76 @@ Editor.defaultConfig = {
 			'tableRow',
 			'mergeTableCells'
 		]
-	}
+	},
+	heading: {
+        options: [
+            {
+                model: "paragraph",
+                title: "Paragraph",
+                class: "ck-heading_paragraph",
+            },
+            {
+                model: "heading1",
+                view: "h1",
+                title: "Heading 1",
+                class: "ck-heading_heading1",
+            },
+            {
+                model: "heading2",
+                view: "h2",
+                title: "Heading 2",
+                class: "ck-heading_heading2",
+            },
+            {
+                model: "heading3",
+                view: "h3",
+                title: "Heading 3",
+                class: "ck-heading_heading3",
+            },
+            {
+                model: "heading4",
+                view: "h4",
+                title: "Heading 4",
+                class: "ck-heading_heading4",
+            },
+        ],
+    },
+	fontFamily: {
+        options: [
+            "default",
+            "Arial, Helvetica, sans-serif",
+            "Courier New, Courier, monospace",
+            "Georgia, serif",
+            "Lucida Sans Unicode, Lucida Grande, sans-serif",
+            "Tahoma, Geneva, sans-serif",
+            "Times New Roman, Times, serif",
+            "Trebuchet MS, Helvetica, sans-serif",
+            "Verdana, Geneva, sans-serif",
+            "JetBrains Mono, monospace",
+            "Lato, Inter, sans-serif",
+        ],
+    },
+	link: {
+        defaultProtocol: "http://",
+        decorators: [
+            {
+                mode: "manual",
+                label: "Open in a new tab",
+                defaultValue: true,
+                attributes: {
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                },
+            },
+            {
+                mode: "manual",
+                label: "Downloadable",
+                attributes: {
+                    download: "download",
+                },
+            },
+        ],
+    },
 };
 
 export default Editor;
